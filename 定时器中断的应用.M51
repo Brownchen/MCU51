@@ -1,0 +1,199 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        09/16/2016  22:40:21  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE STARTUP.obj, 定时器中断的应用.obj TO 定时器中断的应用 RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  STARTUP.obj (?C_STARTUP)
+  定时器中断的应用.obj (定时芲中断的应用)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
+  C:\KEIL\C51\LIB\C51S.LIB (?C?ULDIV)
+
+
+LINK MAP OF MODULE:  定时器中断的应用 (?C_STARTUP)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000AH     UNIT         ?DT?定时芲中断的应用
+            DATA    0012H     0004H     UNIT         _DATA_GROUP_
+            IDATA   0016H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     0008H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+                    000EH     07F2H                  *** GAP ***
+            CODE    0800H     0127H     UNIT         ?PR?MAIN?定时芲中断的应用
+            CODE    0927H     00CEH     UNIT         ?C?LIB_CODE
+            CODE    09F5H     008EH     UNIT         ?PR?INTERRUPTTIMER0?定时芲中断的应用
+            CODE    0A83H     008CH     UNIT         ?C_C51STARTUP
+            CODE    0B0FH     0013H     UNIT         ?C_INITSEG
+            CODE    0B22H     0010H     UNIT         ?CO?定时芲中断的应用
+
+
+
+OVERLAY MAP OF MODULE:   定时器中断的应用 (?C_STARTUP)
+
+
+SEGMENT                                        DATA_GROUP 
+  +--> CALLED SEGMENT                        START    LENGTH
+------------------------------------------------------------
+?C_C51STARTUP                                -----    -----
+  +--> ?PR?MAIN?定时芲中断的应用
+  +--> ?C_INITSEG
+
+?PR?MAIN?定时芲中断的应用                    0012H    0004H
+  +--> ?CO?定时芲中断的应用
+
+
+
+SYMBOL TABLE OF MODULE:  定时器中断的应用 (?C_STARTUP)
+
+  VALUE           TYPE          NAME
+BL51 BANKED LINKER/LOCATER V6.22                                                      09/16/2016  22:40:21  PAGE 2
+
+
+  ----------------------------------
+
+  -------         MODULE        ?C_STARTUP
+  C:0A83H         SEGMENT       ?C_C51STARTUP
+  I:0016H         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  D:00E0H         SYMBOL        ACC
+  D:00F0H         SYMBOL        B
+  D:0083H         SYMBOL        DPH
+  D:0082H         SYMBOL        DPL
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0080H         SYMBOL        IDATALEN
+  C:0A86H         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        PDATALEN
+  N:0000H         SYMBOL        PDATASTART
+  N:0000H         SYMBOL        PPAGE
+  N:0000H         SYMBOL        PPAGEENABLE
+  D:00A0H         SYMBOL        PPAGE_SFR
+  D:0081H         SYMBOL        SP
+  C:0A83H         SYMBOL        STARTUP1
+  N:0000H         SYMBOL        XBPSTACK
+  N:0000H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+  C:0000H         LINE#         126
+  C:0A83H         LINE#         133
+  C:0A85H         LINE#         134
+  C:0A86H         LINE#         135
+  C:0A87H         LINE#         136
+  C:0A89H         LINE#         185
+  C:0A8CH         LINE#         196
+  -------         ENDMOD        ?C_STARTUP
+
+  -------         MODULE        定时芲中断的应用
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  C:09F5H         PUBLIC        InterruptTimer0
+  D:00A8H         PUBLIC        IE
+  C:0B22H         PUBLIC        LedChar
+  D:00B8H         PUBLIC        IP
+  D:0008H         PUBLIC        LedBuff
+  C:0800H         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  D:000EH         PUBLIC        cnt
+  B:00A8H.1       PUBLIC        ET0
+  B:0090H.0       PUBLIC        ADDR0
+  D:008CH         PUBLIC        TH0
+  B:0090H.1       PUBLIC        ADDR1
+  B:0090H.2       PUBLIC        ADDR2
+BL51 BANKED LINKER/LOCATER V6.22                                                      09/16/2016  22:40:21  PAGE 3
+
+
+  B:0090H.3       PUBLIC        ADDR3
+  D:008AH         PUBLIC        TL0
+  B:0088H.4       PUBLIC        TR0
+  D:00C8H         PUBLIC        T2CON
+  D:0010H         PUBLIC        i
+  B:0090H.4       PUBLIC        ENLED
+  D:00D0H         PUBLIC        PSW
+  D:0011H         PUBLIC        flagls
+  -------         PROC          MAIN
+  -------         DO            
+  D:0012H         SYMBOL        sec
+  -------         ENDDO         
+  C:0800H         LINE#         21
+  C:0800H         LINE#         22
+  C:0800H         LINE#         23
+  C:0809H         LINE#         24
+  C:080BH         LINE#         25
+  C:080DH         LINE#         26
+  C:080FH         LINE#         27
+  C:0812H         LINE#         28
+  C:0815H         LINE#         29
+  C:0818H         LINE#         30
+  C:081AH         LINE#         31
+  C:081CH         LINE#         32
+  C:081CH         LINE#         33
+  C:081CH         LINE#         34
+  C:0821H         LINE#         35
+  C:0821H         LINE#         36
+  C:0824H         LINE#         37
+  C:0839H         LINE#         38
+  C:0858H         LINE#         39
+  C:0880H         LINE#         40
+  C:08A8H         LINE#         41
+  C:08D1H         LINE#         42
+  C:08FAH         LINE#         43
+  C:0924H         LINE#         44
+  C:0924H         LINE#         45
+  -------         ENDPROC       MAIN
+  -------         PROC          INTERRUPTTIMER0
+  C:09F5H         LINE#         48
+  C:09F9H         LINE#         50
+  C:09FCH         LINE#         51
+  C:09FFH         LINE#         52
+  C:0A07H         LINE#         53
+  C:0A10H         LINE#         54
+  C:0A10H         LINE#         55
+  C:0A16H         LINE#         56
+  C:0A19H         LINE#         57
+  C:0A19H         LINE#         58
+  C:0A1CH         LINE#         59
+  C:0A31H         LINE#         60
+  C:0A31H         LINE#         61
+  C:0A3EH         LINE#         62
+  C:0A4BH         LINE#         63
+  C:0A58H         LINE#         64
+  C:0A65H         LINE#         65
+  C:0A72H         LINE#         66
+BL51 BANKED LINKER/LOCATER V6.22                                                      09/16/2016  22:40:21  PAGE 4
+
+
+  C:0A7EH         LINE#         67
+  C:0A7EH         LINE#         68
+  -------         ENDPROC       INTERRUPTTIMER0
+  -------         ENDMOD        定时芲中断的应用
+
+  -------         MODULE        ?C?ULDIV
+  C:0963H         PUBLIC        ?C?ULDIV
+  -------         ENDMOD        ?C?ULDIV
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 01E9H BYTE (23%) *
+******************************************************************************
+
+Program Size: data=23.0 xdata=0 code=824
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
