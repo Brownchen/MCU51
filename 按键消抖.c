@@ -15,33 +15,60 @@ unsigned char code LedChar[] = {
 0x80,0x90,0x88,0x83,0xC6,0xA1,0x86,0x8E
 };
 
+bit keysta = 1;
+
 void main()
 {
   bit backup = 1;
   unsigned char cnt = 0;
 
+  EA = 1;
   ENLED = 0;
   ADDR3 = 1;
   ADDR2 = 0;
   ADDR1 = 0;
   ADDR0 = 0;
+  TMOD = 0x01;
+  TH0 = 0xF8;
+  TL0 = 0xCD;
+  ET0 = 1;
+  TR0 = 1;
   P2 = 0xF7;
   P0 = LedChar[cnt];
 
   while(1)
   {
-    if (KEY4 != backup)
-	{
-	   if(backup == 0)
-	   {
-	      cnt++;
-		  if(cnt >= 10)
-		  {
-		     cnt = 0;
-		  }
-		  P0 = LedChar[cnt];
-	   }
-	   backup = KEY4;
-	}
+   if(keysta != backup)
+   {
+      if(backup == 0)
+	  {
+	     cnt++;
+		 if(cnt >= 10)
+		 {
+		    cnt = 0;
+		 }
+		 P0 = LedChar[cnt];
+	  }
+	  backup = keysta;
+	    }
   }
+}
+
+void InterruptTimer0() interrupt 1
+{
+   static unsigned char keybuf = 0xFF;
+
+   TH0 = 0xF8;
+   TL0 = 0xCD;
+   keybuf = (keybuf<<1)|KEY4;
+   if(keybuf == 0x00)
+   {
+     keysta = 0;
+   }
+   else if(keybuf == 0xFF)
+   {
+     keysta = 1;
+   }
+   else
+   {}
 }
