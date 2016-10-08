@@ -63,7 +63,7 @@ void ShowNumber(unsigned long num)
     buf[i] = num % 10;
 	num = num/10;
   }
-  for(i=5;i>0;i--)
+  for(i=5;i>1;i--)
   {
     if(buf[i] == 0)
 	{
@@ -78,7 +78,7 @@ void ShowNumber(unsigned long num)
   }
 }
 
-void KeyAction(unsigned Keycode)
+void KeyAction(unsigned char keycode)
 {
    static unsigned long result = 0;
    static unsigned long addend = 0;
@@ -125,6 +125,7 @@ void KeyDriver()
 		  {
 		     KeyAction(KeyCodeMap[i][j]); 
 		  }
+		  backup[i][j] = KeySta[i][j];
 	   }
 	 }
    }
@@ -146,6 +147,47 @@ void KeyScan()
 
   for(i=0;i<4;i++)
   {
-    if
+    if(keybuf[keyout][i]&0x0F == 0x00){
+	   KeySta[keyout][i] = 0;
+	}
+	else if(keybuf[keyout][i]&0x0F == 0x0F){
+	   KeySta[keyout][i] = 1;
+	}
   }
+
+  keyout++;
+  keyout = keyout&0x03;
+  switch(keyout)
+  {
+      case 0:KEY_OUT_4 = 1;KEY_OUT_1 = 0;break;
+	  case 1:KEY_OUT_1 = 1;KEY_OUT_2 = 0;break;
+	  case 2:KEY_OUT_2 = 1;KEY_OUT_3 = 0;break;
+	  case 3:KEY_OUT_3 = 1;KEY_OUT_4 = 0;break;
+	  default:break;
+  }
+}
+
+void LedScan()
+{
+   static unsigned char i = 0;
+
+   P0 = 0xFF;
+   switch(i)
+   {
+      case 0:ADDR2=0;ADDR1=0;ADDR0=0;i++;P0=LedBuff[0];break;
+	  case 1:ADDR2=0;ADDR1=0;ADDR0=1;i++;P0=LedBuff[1];break;
+	  case 2:ADDR2=0;ADDR1=1;ADDR0=0;i++;P0=LedBuff[2];break;
+	  case 3:ADDR2=0;ADDR1=1;ADDR0=1;i++;P0=LedBuff[3];break;
+	  case 4:ADDR2=1;ADDR1=0;ADDR0=0;i++;P0=LedBuff[4];break;
+	  case 5:ADDR2=1;ADDR1=0;ADDR0=1;i=0;P0=LedBuff[5];break;
+	  default:break;
+   }
+}
+
+void InterruptTimer0() interrupt 1
+{
+    TH0 = 0xFC;
+	TL0 = 0x67;
+	LedScan();
+	KeyScan();
 }
