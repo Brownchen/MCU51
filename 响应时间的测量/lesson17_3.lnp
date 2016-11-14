@@ -1,0 +1,6 @@
+"STARTUP.obj",
+"I2C.obj",
+"keyboard.obj",
+"main.obj" 
+TO "lesson17_3" 
+RAMSIZE(256) 

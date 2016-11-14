@@ -1,0 +1,127 @@
+C51 COMPILER V9.02   I2C                                                                   11/13/2016 15:00:23 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN I2C.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE I2C.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          
+   4          #define I2CDelay()  {_nop_();_nop_();_nop_();_nop_();}
+   5          
+   6          sbit I2C_SCL = P3^7;
+   7          sbit I2C_SDA = P3^6;
+   8          
+   9          void I2CStart()  //产生总线起始信号
+  10          {
+  11   1          I2C_SDA = 1; //首先确保SDA、SCL都是高电平
+  12   1          I2C_SCL = 1;
+  13   1          I2CDelay();
+  14   1          I2C_SDA = 0; //先拉低SDA
+  15   1          I2CDelay();
+  16   1          I2C_SCL = 0; //再拉低SCL
+  17   1      }
+  18          void I2CStop()   //产生总线停止信号
+  19          {
+  20   1          I2C_SCL = 0; //首先确保SDA、SCL都是低电平
+  21   1          I2C_SDA = 0;
+  22   1          I2CDelay();
+  23   1          I2C_SCL = 1; //先拉高SCL
+  24   1          I2CDelay();
+  25   1          I2C_SDA = 1; //再拉高SDA
+  26   1          I2CDelay();
+  27   1      }
+  28          bit I2CWrite(unsigned char dat) //I2C总线写操作，待写入字节dat，返回值为应答状态
+  29          {
+  30   1          bit ack;  //用于暂存应答位的值
+  31   1          unsigned char mask;  //用于探测字节内某一位值的掩码变量
+  32   1      
+  33   1          for (mask=0x80; mask!=0; mask>>=1) //从高位到低位依次进行
+  34   1          {
+  35   2              if ((mask&dat) == 0)  //该位的值输出到SDA上
+  36   2                  I2C_SDA = 0;
+  37   2              else
+  38   2                  I2C_SDA = 1;
+  39   2              I2CDelay();
+  40   2              I2C_SCL = 1;          //拉高SCL
+  41   2              I2CDelay();
+  42   2              I2C_SCL = 0;          //再拉低SCL，完成一个位周期
+  43   2          }
+  44   1          I2C_SDA = 1;   //8位数据发送完后，主机释放SDA，以检测从机应答
+  45   1          I2CDelay();
+  46   1          I2C_SCL = 1;   //拉高SCL
+  47   1          ack = I2C_SDA; //读取此时的SDA值，即为从机的应答值
+  48   1          I2CDelay();
+  49   1          I2C_SCL = 0;   //再拉低SCL完成应答位，并保持住总线
+  50   1      
+  51   1          return (~ack); //应答值取反以符合通常的逻辑：0=不存在或忙或写入失败，1=存在且空闲或写入成功
+  52   1      }
+  53          unsigned char I2CReadNAK() //I2C总线读操作，并发送非应答信号，返回值为读到的字节
+  54          {
+  55   1          unsigned char mask;
+C51 COMPILER V9.02   I2C                                                                   11/13/2016 15:00:23 PAGE 2   
+
+  56   1          unsigned char dat;
+  57   1      
+  58   1          I2C_SDA = 1;  //首先确保主机释放SDA
+  59   1          for (mask=0x80; mask!=0; mask>>=1) //从高位到低位依次进行
+  60   1          {
+  61   2              I2CDelay();
+  62   2              I2C_SCL = 1;      //拉高SCL
+  63   2              if(I2C_SDA == 0)  //读取SDA的值
+  64   2                  dat &= ~mask; //为0时，dat中对应位清零
+  65   2              else
+  66   2                  dat |= mask;  //为1时，dat中对应位置1
+  67   2              I2CDelay();
+  68   2              I2C_SCL = 0;      //再拉低SCL，以使从机发送出下一位
+  69   2          }
+  70   1          I2C_SDA = 1;   //8位数据发送完后，拉高SDA，发送非应答信号
+  71   1          I2CDelay();
+  72   1          I2C_SCL = 1;   //拉高SCL
+  73   1          I2CDelay();
+  74   1          I2C_SCL = 0;   //再拉低SCL完成非应答位，并保持住总线
+  75   1      
+  76   1          return dat;
+  77   1      }
+  78          unsigned char I2CReadACK() //I2C总线读操作，并发送应答信号，返回值为读到的字节
+  79          {
+  80   1          unsigned char mask;
+  81   1          unsigned char dat;
+  82   1      
+  83   1          I2C_SDA = 1;  //首先确保主机释放SDA
+  84   1          for (mask=0x80; mask!=0; mask>>=1) //从高位到低位依次进行
+  85   1          {
+  86   2              I2CDelay();
+  87   2              I2C_SCL = 1;      //拉高SCL
+  88   2              if(I2C_SDA == 0)  //读取SDA的值
+  89   2                  dat &= ~mask; //为0时，dat中对应位清零
+  90   2              else
+  91   2                  dat |= mask;  //为1时，dat中对应位置1
+  92   2              I2CDelay();
+  93   2              I2C_SCL = 0;      //再拉低SCL，以使从机发送出下一位
+  94   2          }
+  95   1          I2C_SDA = 0;   //8位数据发送完后，拉低SDA，发送应答信号
+  96   1          I2CDelay();
+  97   1          I2C_SCL = 1;   //拉高SCL
+  98   1          I2CDelay();
+  99   1          I2C_SCL = 0;   //再拉低SCL完成应答位，并保持住总线
+ 100   1      
+ 101   1          return dat;
+ 102   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    194    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

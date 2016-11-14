@@ -1,0 +1,181 @@
+C51 COMPILER V9.02   MAIN                                                                  11/13/2016 15:00:23 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          //unsigned char code SinWave[] = {  //正弦波波表
+   4          //    127, 152, 176, 198, 217, 233, 245, 252,
+   5          //    255, 252, 245, 233, 217, 198, 176, 152,
+   6          //    127, 102,  78,  56,  37,  21,   9,   2,
+   7          //      0,   2,   9,  21,  37,  56,  78, 102,
+   8          //};
+   9          
+  10          unsigned char code SinWave[] ={
+  11               2,2,2,4,6,9,13,18,
+  12                   25,33,41,50,60,72,85,99,
+  13                   119,135,145,153,160,165,170,174,
+  14                   180,185,190,195,200,205,210,215,
+  15                   225,230,235,240,245,250,255,260,
+  16                   265,270,275,280,285,290,295,300,
+  17                   305,310,315,320,325,330,335,340,
+  18                   345,350,355,360,365,370,375,380,
+  19                   380,380,380,380,380,380,380,380,
+  20                   380,380,380,380,380,380,380,380,
+  21          };
+  22          
+  23          unsigned char code TriWave[] = {  //三角波波表
+  24                0,  16,  32,  48,  64,  80,  96, 112,
+  25              128, 144, 160, 176, 192, 208, 224, 240,
+  26              255, 240, 224, 208, 192, 176, 160, 144,
+  27              128, 112,  96,  80,  64,  48,  32,  16,
+  28          };
+  29          unsigned char code SawWave[] = {  //锯齿波表
+  30                0,   8,  16,  24,  32,  40,  48,  56,
+  31               64,  72,  80,  88,  96, 104, 112, 120,
+  32              128, 136, 144, 152, 160, 168, 176, 184,
+  33              192, 200, 208, 216, 224, 232, 240, 248,
+  34          };
+  35          unsigned char code *pWave;  //波表指针
+  36          unsigned char T0RH = 0;  //T0重载值的高字节
+  37          unsigned char T0RL = 0;  //T0重载值的低字节
+  38          unsigned char T1RH = 1;  //T1重载值的高字节
+  39          unsigned char T1RL = 1;  //T1重载值的低字节
+  40          
+  41          void ConfigTimer0(unsigned int ms);
+  42          void SetWaveFreq(unsigned char freq);
+  43          extern void KeyScan();
+  44          extern void KeyDriver();
+  45          extern void I2CStart();
+  46          extern void I2CStop();
+  47          extern bit I2CWrite(unsigned char dat);
+  48          
+  49          void main()
+  50          {    
+  51   1          EA = 1;             //开总中断
+  52   1          ConfigTimer0(1);  //配置T0定时1ms
+  53   1          pWave = SinWave;  //默认正弦波
+  54   1          SetWaveFreq(1);  //默认频率10Hz
+  55   1          
+C51 COMPILER V9.02   MAIN                                                                  11/13/2016 15:00:23 PAGE 2   
+
+  56   1          while (1)
+  57   1          {
+  58   2              KeyDriver();  //调用按键驱动
+  59   2          }
+  60   1      }
+  61          void KeyAction(unsigned char keycode)
+  62          {       
+  63   1              static unsigned char i = 0;
+  64   1      
+  65   1              if(keycode == 0x26)
+  66   1              {
+  67   2                      if(i==0)
+  68   2                      {
+  69   3                              i = 1;
+  70   3                              pWave = TriWave;
+  71   3                      }
+  72   2                      else if(i==1)
+  73   2                      {
+  74   3                              i = 2;
+  75   3                              pWave = SawWave;
+  76   3                      }
+  77   2                      else
+  78   2                      {
+  79   3                              i = 0;
+  80   3                              pWave = SinWave;
+  81   3                      }
+  82   2              }
+  83   1      }
+  84          
+  85          /* 设置DAC输出值，val-设定值 */
+  86          void SetDACOut(unsigned char val)
+  87          {
+  88   1          I2CStart();
+  89   1          if (!I2CWrite(0x48<<1)) //寻址PCF8591，如未应答，则停止操作并返回
+  90   1          {
+  91   2              I2CStop();
+  92   2              return;
+  93   2          }
+  94   1          I2CWrite(0x40);         //写入控制字节
+  95   1          I2CWrite(val);          //写入DA值  
+  96   1          I2CStop();
+  97   1      }
+  98          void SetWaveFreq(unsigned char freq)
+  99          {
+ 100   1              unsigned long tmp;
+ 101   1      
+ 102   1              tmp = (11059200000/12)/(freq * 81);
+ 103   1              tmp = 65536 - tmp;
+ 104   1              tmp = tmp + 33;
+ 105   1              T1RH = (unsigned char)(tmp >> 8);
+ 106   1              T1RL = (unsigned char)tmp;
+ 107   1              TMOD &= 0x0F;
+ 108   1              TMOD |= 0X10;
+ 109   1              TH1 = T1RH;
+ 110   1              TL1 = T1RL;
+ 111   1              ET1 = 1;
+ 112   1              PT1 = 1;
+ 113   1              TR1 = 1;
+ 114   1      }
+ 115          /* 配置并启动T0，ms-T0定时时间 */
+ 116          void ConfigTimer0(unsigned int ms)
+ 117          {
+C51 COMPILER V9.02   MAIN                                                                  11/13/2016 15:00:23 PAGE 3   
+
+ 118   1          unsigned long tmp;  //临时变量
+ 119   1          
+ 120   1          tmp = 11059200 / 12;       //定时器计数频率
+ 121   1          tmp = (tmp * ms) / 1000;  //计算所需的计数值
+ 122   1          tmp = 65536 - tmp;         //计算定时器重载值
+ 123   1          tmp = tmp + 28;            //补偿中断响应延时造成的误差
+ 124   1          T0RH = (unsigned char)(tmp>>8);  //定时器重载值拆分为高低字节
+ 125   1          T0RL = (unsigned char)tmp;
+ 126   1          TMOD &= 0xF0;   //清零T0的控制位
+ 127   1          TMOD |= 0x01;   //配置T0为模式1
+ 128   1          TH0 = T0RH;     //加载T0重载值
+ 129   1          TL0 = T0RL;
+ 130   1          ET0 = 1;        //使能T0中断
+ 131   1          TR0 = 1;        //启动T0
+ 132   1      }
+ 133          /* T0中断服务函数，执行按键扫描 */
+ 134          void InterruptTimer0() interrupt 1
+ 135          {
+ 136   1          TH0 = T0RH;  //重新加载重载值
+ 137   1          TL0 = T0RL;
+ 138   1          KeyScan();   //按键扫描
+ 139   1      }
+ 140          /* T1中断服务函数，执行波形输出 */
+ 141          void InterruptTimer1() interrupt 3
+ 142          {
+ 143   1          static unsigned char i = 0;
+ 144   1          
+ 145   1          TH1 = T1RH;  //重新加载重载值
+ 146   1          TL1 = T1RL;
+ 147   1          //循环输出波表中的数据
+ 148   1          SetDACOut(pWave[i]);
+ 149   1          i++;
+ 150   1          if (i >= 81)
+ 151   1          {
+ 152   2              i = 0;
+ 153   2          }
+ 154   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    485    ----
+   CONSTANT SIZE    =    144    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
