@@ -25,6 +25,7 @@ unsigned char RxdByte = 0;
 bit backup = 1; 
 unsigned char cnt = 0;
 unsigned char KeySta=1;
+unsigned char d;
 
 
 void ConfigTimer0(unsigned int ms);
@@ -41,25 +42,38 @@ void main()
 	P2 = 0xF7; 
     ConfigTimer0(1);   //配置T0定时1ms
     ConfigUART(9600);  //配置波特率为9600
+	
     
     while (1)
     {  
 //	   P0 = LedChar[(RxdByte & 0x0F)];//将接收字节在数码管上以十六进制形式显示出来
-        LedBuff[0] = LedChar[RxdByte & 0x0F];
-	    LedBuff[1] = LedChar[RxdByte>>4]; 
+//        LedBuff[0] = LedChar[RxdByte & 0x0F];
+//	    LedBuff[1] = LedChar[RxdByte>>4]; 
+		//将接收字节转化成十进制数
+//		d=(RxdByte&0x10)*16+(RxdByte&0x08)*8+(RxdByte&0x04)*4+(RxdByte&0x02)*2+(RxdByte&0x01)*1;
+//		LedBuff[0] = LedChar[d%10];
+//	    LedBuff[1] = LedChar[d/10%10];
+		LedBuff[0] = LedChar[RxdByte%10];
+	    LedBuff[1] = LedChar[RxdByte/10%10];
+		LedBuff[2] = LedChar[RxdByte/100%10];
+//		LedBuff[3] = LedChar[RxdByte/1000%10];
+//		LedBuff[4] = LedChar[RxdByte/10000%10];
+//		LedBuff[5] = LedChar[RxdByte/100000%10];
+		
 	   if (KeySta != backup)  //当前值与前次值不相等说明此时按键有动作
         {
             if (backup == 0)   //如果前次值为0，则说明当前是弹起动作
             {
                 cnt++;         //按键次数+1
-                if (cnt >= 10)
-                {              //只用1个数码管显示，所以加到10就清零重新开始
-                    cnt = 0;
-                }    
+//                if (cnt >= 99)
+//                {              //只用1个数码管显示，所以加到10就清零重新开始
+//                    cnt = 0;
+//                }    
             }
             backup = KeySta;   //更新备份为当前值，以备进行下次比较
+			SBUF = cnt;		//把cnt的值赋给SBUF寄存器，然后发送出去
         }
-	        SBUF = cnt;		//把cnt的值赋给SBUF寄存器，然后发送出去	
+//	        SBUF = cnt;		//把cnt的值赋给SBUF寄存器，然后发送出去	
     }
 }
 /* 配置并启动T0，ms-T0定时时间 */

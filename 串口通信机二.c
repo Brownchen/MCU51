@@ -26,6 +26,7 @@ unsigned char RxdByte = 0;
 bit backup = 1;  
 unsigned char cnt = 0;
 unsigned char KeySta=1;
+unsigned char d;
 
 
 void ConfigTimer0(unsigned int ms);
@@ -42,13 +43,23 @@ void main()
 	P2 = 0xF7; 
     ConfigTimer0(1);   //配置T0定时1ms
     ConfigUART(9600);  //配置波特率为9600
+	
 
     
     while (1)
     {   //将接收字节在数码管上以十六进制形式显示出来
   //      P0 = LedChar[RxdByte & 0x0F];
-         LedBuff[0] = LedChar[RxdByte & 0x0F];
-		 LedBuff[1] = LedChar[RxdByte>>4]; 
+//         LedBuff[0] = LedChar[RxdByte & 0x0F];
+//		 LedBuff[1] = LedChar[RxdByte>>4]; 
+//         d=(RxdByte&0x10)*16+(RxdByte&0x08)*8+(RxdByte&0x04)*4+(RxdByte&0x02)*2+(RxdByte&0x01)*1;
+//		LedBuff[0] = LedChar[d%10];
+//	    LedBuff[1] = LedChar[d/10%10];
+  		LedBuff[0] = LedChar[RxdByte%10];
+	    LedBuff[1] = LedChar[RxdByte/10%10];
+		LedBuff[2] = LedChar[RxdByte/100%10];
+//		LedBuff[3] = LedChar[RxdByte/1000%10];
+//		LedBuff[4] = LedChar[RxdByte/10000%10];
+//		LedBuff[5] = LedChar[RxdByte/100000%10];
 	}
 }
 /* 配置并启动T0，ms-T0定时时间 */
@@ -109,7 +120,7 @@ void InterruptUART() interrupt 4
     {
         RI = 0;  //软件清零
 		RxdByte = SBUF;  //接收到的数据保存到接收字节变量中
-    	SBUF = RxdByte+1;	  //将从片1接收的数据加倍再发给片1
+    	SBUF = RxdByte*4;	  //将从片1接收的数据加倍再发给片1
 
 	}
     if (TI)  //字节发送完毕
